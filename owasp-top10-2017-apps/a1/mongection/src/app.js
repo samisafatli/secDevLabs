@@ -10,6 +10,13 @@ const PORT = 10001;
 
 var emailRegex = /^[-!#$%&'*+\/0-9=?A-Z^_a-z{|}~](\.?[-!#$%&'*+\/0-9=?A-Z^_a-z`{|}~])*@[a-zA-Z0-9](-*\.?[a-zA-Z0-9])*\.[a-zA-Z](-?[a-zA-Z0-9])+$/;
 
+const validateCredentialsType = (email, password, name) => {
+    if (typeof(email) != 'string' || typeof(password) != 'string' || (name && typeof(name) != 'string') ){
+        return false
+    }
+    return true
+}
+
 server.use(bodyParser.json());
 
 server.use(function(request, response, next) {
@@ -39,6 +46,10 @@ server.post("/login", async (request, response) => {
         const email = request.body.email;
         const password = request.body.password;
 
+        if(!validateCredentialsType(email,password)){ 
+            response.send('Bad Credentials') 
+        }
+
         const user = await db.login({email, password});
 
         console.log(user.length)
@@ -61,6 +72,10 @@ server.post("/register", async (request, response) => {
 
         const validEmail = emailRegex.test(email);
         if(!validEmail) { response.send('Bad Email'); }
+
+        if(!validateCredentialsType(email,password,name)){
+            response.send('Bad Credentials') 
+        }
 
         else {
             const user = await db.register({name, email, password});
